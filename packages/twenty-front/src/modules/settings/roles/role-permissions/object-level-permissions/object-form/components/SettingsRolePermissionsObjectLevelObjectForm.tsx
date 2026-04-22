@@ -8,9 +8,10 @@ import { SettingsRolePermissionsObjectLevelRecordLevelSection } from '@/settings
 import { settingsDraftRoleFamilyState } from '@/settings/roles/states/settingsDraftRoleFamilyState';
 import { SubMenuTopBarContainer } from '@/ui/layout/page/components/SubMenuTopBarContainer';
 import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
+import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
+import { useQuery } from '@apollo/client/react';
 import { t } from '@lingui/core/macro';
 import { useSearchParams } from 'react-router-dom';
-import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { SettingsPath } from 'twenty-shared/types';
 import {
   getSettingsPath,
@@ -18,11 +19,8 @@ import {
   isRecordFilterValueValid,
 } from 'twenty-shared/utils';
 import { Button } from 'twenty-ui/input';
-import { useQuery } from '@apollo/client/react';
 import {
-  type BillingEntitlement,
-  BillingEntitlementKey,
-  FindOneAgentDocument,
+  FindOneAgentDocument
 } from '~/generated-metadata/graphql';
 
 type SettingsRolePermissionsObjectLevelObjectFormProps = {
@@ -55,13 +53,16 @@ export const SettingsRolePermissionsObjectLevelObjectForm = ({
 
   const workspaceBillingEntitlements = currentWorkspace?.billingEntitlements;
 
+  const isRLSBillingEntitlementEnabled =true;
+
+  /* TODO Test row level
   const isRLSBillingEntitlementEnabled =
     workspaceBillingEntitlements?.some(
       (entitlement: BillingEntitlement) =>
         entitlement.key === BillingEntitlementKey.RLS &&
         entitlement.value === true,
     ) ?? false;
-
+*/
   const objectMetadataItem = objectMetadata.objectMetadataItem;
 
   const objectLabelSingular = objectMetadataItem.labelSingular;
