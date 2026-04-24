@@ -4,13 +4,10 @@ import { useMutation, useQuery } from '@apollo/client/react';
 import { t } from '@lingui/core/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { Tag } from 'twenty-ui/components';
-import { H2Title, IconBolt, IconLock, IconRobot } from 'twenty-ui/display';
+import { H2Title, IconBolt, IconRobot } from 'twenty-ui/display';
 import { Card, Section } from 'twenty-ui/layout';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
-import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
-import { billingState } from '@/client-config/states/billingState';
 import { useClientConfig } from '@/client-config/hooks/useClientConfig';
 import { SettingsAiModelsTable } from '@/settings/ai/components/SettingsAiModelsTable';
 import { useApolloAdminClient } from '@/settings/admin-panel/apollo/hooks/useApolloAdminClient';
@@ -26,14 +23,12 @@ import { type GetAiProvidersResult } from '@/settings/admin-panel/ai/types/GetAi
 import { parseProviderItems } from '@/settings/admin-panel/ai/utils/parseProviderItems';
 import { getModelIcon } from '@/settings/ai/utils/getModelIcon';
 import { SettingsAdminTabSkeletonLoader } from '@/settings/admin-panel/components/SettingsAdminTabSkeletonLoader';
-import { SettingsEnterpriseFeatureGateCard } from '@/settings/components/SettingsEnterpriseFeatureGateCard';
 import { SettingsOptionCardContentSelect } from '@/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
 import { useUsageValueFormatter } from '@/settings/usage/hooks/useUsageValueFormatter';
 import { getPeriodDates } from '@/settings/usage/utils/getPeriodDates';
 import { getPeriodOptions } from '@/settings/usage/utils/getPeriodOptions';
 import { type PeriodPreset } from '@/settings/usage/utils/periodPreset';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
-import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { Select } from '@/ui/input/components/Select';
 import { Table } from '@/ui/layout/table/components/Table';
 import { TableCell } from '@/ui/layout/table/components/TableCell';
@@ -58,11 +53,6 @@ export const SettingsAdminAI = () => {
   const { enqueueErrorSnackBar } = useSnackBar();
   const { refetch: refetchClientConfig } = useClientConfig();
   const { formatUsageValue } = useUsageValueFormatter();
-  const currentWorkspace = useAtomStateValue(currentWorkspaceState);
-  const billing = useAtomStateValue(billingState);
-  const isBillingEnabled = billing?.isBillingEnabled ?? false;
-  const hasEnterpriseAccess =
-    isBillingEnabled || currentWorkspace?.hasValidEnterpriseKey === true;
   const [usagePeriod, setUsagePeriod] = useState<PeriodPreset>('30d');
   const periodOptions = getPeriodOptions();
   const usageDates = getPeriodDates(usagePeriod);
@@ -102,7 +92,6 @@ export const SettingsAdminAI = () => {
       periodStart: usageDates.periodStart,
       periodEnd: usageDates.periodEnd,
     },
-    skip: !hasEnterpriseAccess,
   });
 
   const effectiveUsageData = usageData ?? previousUsageData;
@@ -196,14 +185,6 @@ export const SettingsAdminAI = () => {
         <H2Title
           title={t`Custom Providers`}
           description={t`Add custom endpoints, private gateways, or additional regions.`}
-          adornment={
-            <Tag
-              text={t`Enterprise`}
-              color="transparent"
-              Icon={IconLock}
-              variant="border"
-            />
-          }
         />
 
         <SettingsAdminAiProviderListCard
@@ -302,67 +283,50 @@ export const SettingsAdminAI = () => {
           title={t`AI Usage by Workspace`}
           description={t`AI consumption across all workspaces.`}
           adornment={
-            hasEnterpriseAccess ? (
-              <Select
-                dropdownId="admin-ai-usage-period"
-                value={usagePeriod}
-                options={periodOptions}
-                onChange={setUsagePeriod}
-                needIconCheck
-                selectSizeVariant="small"
-              />
-            ) : (
-              <Tag
-                text={t`Enterprise`}
-                color="transparent"
-                Icon={IconLock}
-                variant="border"
-              />
-            )
+            <Select
+              dropdownId="admin-ai-usage-period"
+              value={usagePeriod}
+              options={periodOptions}
+              onChange={setUsagePeriod}
+              needIconCheck
+              selectSizeVariant="small"
+            />
           }
         />
-        {hasEnterpriseAccess ? (
-          usageByWorkspace.length > 0 ? (
-            <Table>
-              <TableRow gridTemplateColumns={USAGE_TABLE_GRID_TEMPLATE_COLUMNS}>
-                <TableHeader>{t`Workspace`}</TableHeader>
-                <TableHeader align="right">{t`Usage`}</TableHeader>
-              </TableRow>
-              {usageByWorkspace.map((item) => (
-                <TableRow
-                  key={item.key}
-                  gridTemplateColumns={USAGE_TABLE_GRID_TEMPLATE_COLUMNS}
-                  to={getSettingsPath(SettingsPath.AdminPanelWorkspaceDetail, {
-                    workspaceId: item.key,
-                  })}
-                >
-                  <TableCell color={themeCssVariables.font.color.primary}>
-                    {item.label ?? item.key}
-                  </TableCell>
-                  <TableCell align="right">
-                    {formatUsageValue(item.creditsUsed)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </Table>
-          ) : (
-            <Card rounded>
-              <TableRow gridTemplateColumns="1fr">
-                <TableCell
-                  color={themeCssVariables.font.color.tertiary}
-                  align="center"
-                >
-                  {t`No AI usage data recorded yet.`}
+        {usageByWorkspace.length > 0 ? (
+          <Table>
+            <TableRow gridTemplateColumns={USAGE_TABLE_GRID_TEMPLATE_COLUMNS}>
+              <TableHeader>{t`Workspace`}</TableHeader>
+              <TableHeader align="right">{t`Usage`}</TableHeader>
+            </TableRow>
+            {usageByWorkspace.map((item) => (
+              <TableRow
+                key={item.key}
+                gridTemplateColumns={USAGE_TABLE_GRID_TEMPLATE_COLUMNS}
+                to={getSettingsPath(SettingsPath.AdminPanelWorkspaceDetail, {
+                  workspaceId: item.key,
+                })}
+              >
+                <TableCell color={themeCssVariables.font.color.primary}>
+                  {item.label ?? item.key}
+                </TableCell>
+                <TableCell align="right">
+                  {formatUsageValue(item.creditsUsed)}
                 </TableCell>
               </TableRow>
-            </Card>
-          )
+            ))}
+          </Table>
         ) : (
-          <SettingsEnterpriseFeatureGateCard
-            title={t`Enterprise feature`}
-            description={t`AI usage analytics across workspaces is available with an Enterprise key.`}
-            buttonTitle={t`Activate`}
-          />
+          <Card rounded>
+            <TableRow gridTemplateColumns="1fr">
+              <TableCell
+                color={themeCssVariables.font.color.tertiary}
+                align="center"
+              >
+                {t`No AI usage data recorded yet.`}
+              </TableCell>
+            </TableRow>
+          </Card>
         )}
       </Section>
     </>

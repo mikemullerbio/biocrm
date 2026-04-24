@@ -8,7 +8,6 @@ import { authProvidersState } from '@/client-config/states/authProvidersState';
 import { isClickHouseConfiguredState } from '@/client-config/states/isClickHouseConfiguredState';
 import { isMultiWorkspaceEnabledState } from '@/client-config/states/isMultiWorkspaceEnabledState';
 import { Separator } from '@/settings/components/Separator';
-import { SettingsEnterpriseFeatureGateCard } from '@/settings/components/SettingsEnterpriseFeatureGateCard';
 import { SettingsOptionCardContentButton } from '@/settings/components/SettingsOptions/SettingsOptionCardContentButton';
 import { SettingsOptionCardContentCounter } from '@/settings/components/SettingsOptions/SettingsOptionCardContentCounter';
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
@@ -29,12 +28,10 @@ import { CombinedGraphQLErrors } from '@apollo/client/errors';
 import { useMutation } from '@apollo/client/react';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { Tag } from 'twenty-ui/components';
 import {
   H2Title,
   IconClockHour8,
   IconHistory,
-  IconLock,
   IconTrash,
 } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
@@ -164,8 +161,7 @@ export const SettingsSecurity = () => {
     !hasDirectAuthEnabled &&
     hasBypassProviderAvailable;
 
-  const hasEnterpriseAccess = currentWorkspace?.hasValidEnterpriseKey === true;
-  const isEventLogsEnabled = hasEnterpriseAccess && isClickHouseConfigured;
+  const isEventLogsEnabled = isClickHouseConfigured;
 
   return (
     <SubMenuTopBarContainer
@@ -186,14 +182,6 @@ export const SettingsSecurity = () => {
               <H2Title
                 title={t`SSO`}
                 description={t`Configure an SSO connection`}
-                adornment={
-                  <Tag
-                    text={t`Enterprise`}
-                    color="transparent"
-                    Icon={IconLock}
-                    variant="border"
-                  />
-                }
               />
               <SettingsSSOIdentitiesProvidersListCard />
             </Section>
@@ -242,64 +230,48 @@ export const SettingsSecurity = () => {
             <H2Title
               title={t`Audit Logs`}
               description={t`View workspace activity logs`}
-              adornment={
-                <Tag
-                  text={t`Enterprise`}
-                  color="transparent"
-                  Icon={IconLock}
-                  variant="border"
-                />
-              }
             />
-            {hasEnterpriseAccess ? (
-              <Card rounded>
-                <SettingsOptionCardContentButton
-                  Icon={IconHistory}
-                  title={t`Workspace Events`}
-                  description={
-                    !isClickHouseConfigured
-                      ? t`ClickHouse is required for audit logs. Contact your administrator.`
-                      : t`View and filter events, page views, object changes`
-                  }
-                  Button={
-                    <StyledLinkContainer>
-                      <Link
-                        to={getSettingsPath(SettingsPath.EventLogs)}
-                        data-disabled={!isEventLogsEnabled}
-                      >
-                        <Button
-                          title={t`View Logs`}
-                          variant="secondary"
-                          size="small"
-                          disabled={!isEventLogsEnabled}
-                        />
-                      </Link>
-                    </StyledLinkContainer>
-                  }
-                />
-                {isEventLogsEnabled && (
-                  <>
-                    <Separator />
-                    <SettingsOptionCardContentCounter
-                      Icon={IconClockHour8}
-                      title={t`Log retention`}
-                      description={t`Number of days to retain audit logs (30-1095 days)`}
-                      value={currentWorkspace?.eventLogRetentionDays ?? 90}
-                      onChange={handleEventLogRetentionDaysChange}
-                      minValue={30}
-                      maxValue={1095}
-                      showButtons={false}
-                    />
-                  </>
-                )}
-              </Card>
-            ) : (
-              <SettingsEnterpriseFeatureGateCard
-                title={t`Enterprise feature`}
-                description={t`Upgrade to Enterprise to access audit logs.`}
-                buttonTitle={t`Activate`}
+            <Card rounded>
+              <SettingsOptionCardContentButton
+                Icon={IconHistory}
+                title={t`Workspace Events`}
+                description={
+                  !isClickHouseConfigured
+                    ? t`ClickHouse is required for audit logs. Contact your administrator.`
+                    : t`View and filter events, page views, object changes`
+                }
+                Button={
+                  <StyledLinkContainer>
+                    <Link
+                      to={getSettingsPath(SettingsPath.EventLogs)}
+                      data-disabled={!isEventLogsEnabled}
+                    >
+                      <Button
+                        title={t`View Logs`}
+                        variant="secondary"
+                        size="small"
+                        disabled={!isEventLogsEnabled}
+                      />
+                    </Link>
+                  </StyledLinkContainer>
+                }
               />
-            )}
+              {isEventLogsEnabled && (
+                <>
+                  <Separator />
+                  <SettingsOptionCardContentCounter
+                    Icon={IconClockHour8}
+                    title={t`Log retention`}
+                    description={t`Number of days to retain audit logs (30-1095 days)`}
+                    value={currentWorkspace?.eventLogRetentionDays ?? 90}
+                    onChange={handleEventLogRetentionDaysChange}
+                    minValue={30}
+                    maxValue={1095}
+                    showButtons={false}
+                  />
+                </>
+              )}
+            </Card>
           </Section>
           <Section>
             <H2Title
