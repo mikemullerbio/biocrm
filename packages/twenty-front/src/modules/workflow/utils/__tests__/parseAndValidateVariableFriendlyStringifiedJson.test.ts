@@ -107,11 +107,19 @@ describe('parseAndValidateVariableFriendlyStringifiedJson', () => {
   });
 
   describe('Non-object JSON values', () => {
-    it('should reject JSON array', () => {
+    it('should accept JSON array', () => {
       const result =
         parseAndValidateVariableFriendlyStringifiedJson('[1, 2, 3]');
 
-      expect(result.isValid).toBe(false);
+      expect(result.isValid).toBe(true);
+    });
+
+    it('should accept JSON array of objects', () => {
+      const result = parseAndValidateVariableFriendlyStringifiedJson(
+        '[{"user": {"uniqueId": "addisonre"}, "stats": {"followerCount": 88200000}}]',
+      );
+
+      expect(result.isValid).toBe(true);
     });
 
     it('should reject JSON string', () => {

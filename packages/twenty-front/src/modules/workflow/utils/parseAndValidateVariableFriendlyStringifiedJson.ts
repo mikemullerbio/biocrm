@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const schema = z.record(z.string(), z.any());
+const schema = z.union([z.record(z.string(), z.any()), z.array(z.any())]);
 
 export const parseAndValidateVariableFriendlyStringifiedJson = (
   expectedJson: string,
