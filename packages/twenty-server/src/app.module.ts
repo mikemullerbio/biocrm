@@ -36,6 +36,8 @@ import { ModulesModule } from 'src/modules/modules.module';
 import { ClickHouseModule } from './database/clickHouse/clickHouse.module';
 import { CoreEngineModule } from './engine/core-modules/core-engine.module';
 import { I18nModule } from './engine/core-modules/i18n/i18n.module';
+import { JobsModule } from './engine/core-modules/message-queue/jobs.module';
+import { MessageQueueModule } from './engine/core-modules/message-queue/message-queue.module';
 
 // TODO: Remove this middleware when all the rest endpoints are migrated to TwentyORM
 const MIGRATED_REST_METHODS = [
@@ -73,6 +75,9 @@ const MIGRATED_REST_METHODS = [
     WorkspaceMetadataVersionModule,
     // I18n module for translations
     I18nModule,
+    // Queue job processors (run in-process to avoid separate worker memory overhead)
+    JobsModule,
+    MessageQueueModule.registerExplorer(),
     // Conditional modules
     ...AppModule.getConditionalModules(),
   ],

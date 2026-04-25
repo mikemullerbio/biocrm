@@ -40,8 +40,5 @@ register_background_jobs() {
 setup_and_migrate_db
 register_background_jobs
 
-# Start the queue worker alongside the server
-node /app/packages/twenty-server/dist/queue-worker/queue-worker &
-
 # Continue with the original Docker command
 exec "$@"
